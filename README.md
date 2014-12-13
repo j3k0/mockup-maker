@@ -13,20 +13,20 @@ Generate Balsamiq mockups from text description
 ## Example input file
 
 ```
-    === welcome ===
+=== welcome ===
 
-    __ logo
-    _ enter, (>)
+__ logo
+_ enter, (>)
 
-    === login ===
+=== login ===
 
-    * email:
-    * password:
-     , forgot your password? >
+* email:
+* password:
+ , forgot your password? >
 
-    _ login with Facebook, (>)
+_ login with Facebook, (>)
 
-    _ login as a guest, (>)
+_ login as a guest, (>)
 ```
 
 Result balsamiq mockup: http://pasteboard.co/2pmdHuKN.png
