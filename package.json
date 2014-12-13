@@ -12,5 +12,8 @@
     "commander": "^2.5.0",
     "handlebars": "^2.0.0",
     "underscore": "^1.7.0"
+  },
+  "bin": {
+    "mockupmaker": "index.js"
   }
 }
