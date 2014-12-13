@@ -1,0 +1,10 @@
+<control controlID="100{{id}}" controlTypeID="com.balsamiq.mockups::iPhone" x="{{xBg}}" y="{{yBg}}" w="-1" h="-1" measuredW="282" measuredH="573" zOrder="{{zOrder}}" locked="false" isInGroup="-1">
+    <controlProperties>
+    <model>IPhone5</model>
+    </controlProperties>
+</control>
+<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::iPhoneMenu" x="{{x}}" y="{{y}}" w="-1" h="-1" measuredW="215" measuredH="189" zOrder="{{zOrder}}0" locked="false" isInGroup="-1">
+    <controlProperties>
+    <text>{{{name}}}%0A{{{linesEncoded}}}</text>
+    </controlProperties>
+</control>

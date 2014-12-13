@@ -1,0 +1,16 @@
+{
+  "name": "mockup-maker",
+  "version": "0.1.0",
+  "description": "Generate Balsamiq mockups from text description",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jean-Christophe Hoelt <hoelt@fovea.cc>",
+  "license": "GPL",
+  "dependencies": {
+    "commander": "^2.5.0",
+    "handlebars": "^2.0.0",
+    "underscore": "^1.7.0"
+  }
+}
