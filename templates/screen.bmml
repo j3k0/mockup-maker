@@ -1,10 +1,15 @@
-<control controlID="100{{id}}" controlTypeID="com.balsamiq.mockups::iPhone" x="{{xBg}}" y="{{yBg}}" w="-1" h="-1" measuredW="282" measuredH="573" zOrder="{{zOrder}}" locked="false" isInGroup="-1">
+<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::iPhone" x="{{x}}" y="{{y}}" w="-1" h="-1" measuredW="282" measuredH="573" zOrder="{{zOrder}}" locked="false" isInGroup="-1">
     <controlProperties>
     <model>IPhone5</model>
     </controlProperties>
 </control>
-<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::iPhoneMenu" x="{{x}}" y="{{y}}" w="-1" h="-1" measuredW="215" measuredH="189" zOrder="{{zOrder}}0" locked="false" isInGroup="-1">
+<control controlID="100{{id}}" controlTypeID="com.balsamiq.mockups::iPhoneMenu" x="{{math x "+" 33}}" y="{{math y "+" 104}}" w="-1" h="-1" measuredW="215" measuredH="189" zOrder="100{{zOrder}}" locked="false" isInGroup="-1">
     <controlProperties>
-    <text>{{{name}}}%0A{{{linesEncoded}}}</text>
+    <text>%0A{{{linesEncoded}}}</text>
+    </controlProperties>
+</control>
+<control controlID="200{{id}}" controlTypeID="com.balsamiq.mockups::SubTitle" x="{{math x "+" 43}}" y="{{math y "+" 110}}" w="215" h="-1" measuredW="95" measuredH="27" zOrder="200{{zOrder}}" locked="false" isInGroup="-1">
+    <controlProperties>
+    <text>{{{nameEncoded}}}</text>
     </controlProperties>
 </control>

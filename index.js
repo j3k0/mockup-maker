@@ -6,16 +6,28 @@ var _ = require("underscore");
 var fs = require("fs");
 
 program
-    .version("0.0.1")
+    .version("0.2.0")
     .option("-i, --in <file>", "select the input file")
     .parse(process.argv);
 
 if (!program.in)
     program.help();
 
+Handlebars.registerHelper("math", function(lvalue, operator, rvalue, options) {
+    lvalue = parseFloat(lvalue);
+    rvalue = parseFloat(rvalue);
+    return {
+        "+": lvalue + rvalue,
+        "-": lvalue - rvalue,
+        "*": lvalue * rvalue,
+        "/": lvalue / rvalue,
+        "%": lvalue % rvalue
+    }[operator];
+});
+
 var loadTemplates = function(callback) {
     var templates = {};
-    var fileNames = [ "index", "screen" ];
+    var fileNames = [ "index", "screen", "image" ];
     var nDone = 0;
     var doneWithFile = function() {
         nDone ++;
@@ -40,22 +52,48 @@ var loadTemplates = function(callback) {
 };
 
 var extractScreens = function(data) {
+    var name, size, matches;
     var lines = (""+data).split("\n");
     var screens = [];
     var screen = { name: "no", lines: [] };
     lines.forEach(function(line) {
-        var matches = line.match(/\=\=\=\ (.+)\ \=\=\=/);
+
+        // Ignore comments
+        if (line.match(/^\ *#.*/))
+            return;
+
+        // New screen
+        matches = line.match(/^\=\=\=\ (.+)\ \=\=\=$/);
         if (matches) {
-            var name = matches[1];
+            name = matches[1];
             screen = {
                 name: name,
-                lines: []
+                lines: [],
+                extra: []
             }
             screens.push(screen);
+            return;
         }
-        else {
-            screen.lines.push(line);
+
+        // Image
+        matches = line.match(/^image\ +(\d+)\ +(.*)/);
+        if (matches) {
+            size = matches[1];
+            name = matches[2];
+            screen.extra.push({
+                type: "image",
+                name: name,
+                top: screen.lines.length,
+                height: size
+            });
+            for (var i = 0; i < size; ++i) {
+                screen.lines.push("");
+            }
+            return;
         }
+
+        // Add a line
+        screen.lines.push(line);
     });
     return screens;
 };
@@ -67,26 +105,40 @@ loadTemplates(function(templates) {
 
         var screens = extractScreens(data);
         var originX = 30;
+        var lineH = 29;
         var x = originX;
         var y = 30;
-        var id = 1;
+        var id = 0;
         screens.forEach(function(screen) {
+            id += 1;
             screen.zOrder = id;
             screen.id = id;
-            screen.xBg = x;
-            screen.yBg = y;
-            screen.x = x + 33;
-            screen.y = y + 104;
+            screen.x = x;
+            screen.y = y;
             var linesEncoded = _(screen.lines).map(function(line) {
                 return encodeURIComponent(line);
             });
             screen.linesEncoded = linesEncoded.join("%0A");
+            screen.nameEncoded = encodeURIComponent(screen.name);
 
             content.push(templates.screen(screen));
 
-            id += 1;
+            screen.extra.forEach(function(extra) {
+                id += 1;
+                extra.x = x;
+                extra.y = y;
+                extra.zOrder = id;
+                extra.id = id;
+                if (extra.name)
+                    extra.nameEncoded = encodeURIComponent(extra.name);
+                extra.top = 109 + lineH + extra.top * lineH;
+                extra.height = extra.height * lineH;
+                if (templates[extra.type])
+                    content.push(templates[extra.type](extra));
+            });
+
             x += 310;
-            if (x > 1100) {
+            if (x > 2000) {
                 x = originX;
                 y += 603;
             }

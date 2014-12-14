@@ -1,6 +1,7 @@
 === welcome ===
 
-__ logo
+image 5 your logo
+
 _ enter, (>)
 
 === login ===
@@ -12,4 +13,3 @@ _ enter, (>)
 _ login with Facebook, (>)
 
 _ login as a guest, (>)
-
