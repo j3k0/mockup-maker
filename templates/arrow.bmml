@@ -1,0 +1,8 @@
+<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::Arrow" x="{{x0}}" y="{{y0}}" w="{{math x1 "-" x0}}" h="{{math y1 "-" y0}}" measuredW="{{math x1 "-" x0}}" measuredH="{{math y1 "-" y0}}" zOrder="400{{id}}" locked="false" isInGroup="-1">
+    <controlProperties>
+        <curvature>-1</curvature>
+        <direction>top</direction>
+        <leftArrow>false</leftArrow>
+        <text/>
+    </controlProperties>
+</control>

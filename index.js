@@ -28,7 +28,7 @@ Handlebars.registerHelper("math", function(lvalue, operator, rvalue, options) {
 
 var loadTemplates = function(callback) {
     var templates = {};
-    var fileNames = [ "index", "screen", "image" ];
+    var fileNames = [ "index", "screen", "image", "arrow" ];
     var nDone = 0;
     var doneWithFile = function() {
         nDone ++;
@@ -99,53 +99,184 @@ var extractScreens = function(data) {
     return screens;
 };
 
+var extractScreenFlow = function(data, screens) {
+    var lines = (""+data).split("\n");
+    var screenFlowStarted = false;
+    var flatTree = [];
+    var currentLevel = -1;
+    var posX = -1;
+    var posY = 0;
+    lines.forEach(function(line) {
+        // Ignore comments
+        if (line.match(/^\ *#.*/))
+            return;
+        if (line.match(/^\ *$/))
+            return;
+        if (line == "== screen flow ==") {
+            screenFlowStarted = true;
+            return;
+        }
+        if (line.match(/^===.*===$/)) {
+            screenFlowStarted = false;
+        }
+        if (!screenFlowStarted) {
+            return;
+        }
+        var name;
+        var level = 0;
+        for (var i = 20; i > 0; --i) {
+            var rx = "^";
+            for (var j = 0; j < i; ++j)
+                rx += "  ";
+            rx += "(\\w+.*)$";
+            var regexp = new RegExp(rx);
+            if (line.match(regexp)) {
+                level = i;
+                name = line.match(regexp)[1];
+                break;
+            }
+        }
+        if (level == 0)
+            name = line.match(/^(\w+.*)$/)[1];
+        if (level <= currentLevel)
+            posY += 1;
+        posX += level - currentLevel;
+        currentLevel = level;
+        flatTree.push({
+            x: posX,
+            y: posY,
+            level: level,
+            name: name
+        });
+    });
+
+    /*
+    if (flatTree.length == 0) {
+        var screens = extractScreens(data);
+        for (var i = 0; i < screens.length; ++i) {
+            flatTree.push({
+                x: i,
+                y: 0,
+                level: i,
+                name: screens[i].name
+            });
+        }
+    }
+    */
+
+    // build the tree
+    var root = [];
+    var stack = [ root ];
+    flatTree.forEach(function(row) {
+        while (row.level < stack.length - 1)
+            stack.pop();
+        while (row.level > stack.length - 1) {
+            var newList = [];
+            stack.push(newList);
+            // stack[stack.length-1].push(newList);
+        }
+        for (var i = 0; i < screens.length; ++i) {
+            if (screens[i].name == row.name)
+                row.screen = screens[i];
+        }
+        if (stack.length >= 2) {
+            var topList = stack[stack.length-2];
+            var parent = topList[topList.length-1];
+            row.parent = parent;
+        }
+        stack[stack.length-1].push(row);
+    });
+
+    return {
+        root: root,
+        flat: flatTree
+    }
+};
+
+var originX = 30;
+var originY = 30;
+var lineH = 29;
+
+renderScreen = function(templates, content, screen, id, x, y) {
+    id += 1;
+    screen.zOrder = id;
+    screen.id = id;
+    screen.x = x;
+    screen.y = y;
+    var linesEncoded = _(screen.lines).map(function(line) {
+        return encodeURIComponent(line);
+    });
+    screen.linesEncoded = linesEncoded.join("%0A");
+    screen.nameEncoded = encodeURIComponent(screen.name);
+
+    content.push(templates.screen(screen));
+
+    screen.extra.forEach(function(extra) {
+        id += 1;
+        extra.x = x;
+        extra.y = y;
+        extra.zOrder = id;
+        extra.id = id;
+        if (extra.name)
+            extra.nameEncoded = encodeURIComponent(extra.name);
+        extra.top = 109 + lineH + extra.top * lineH;
+        extra.height = extra.height * lineH;
+        if (templates[extra.type])
+            content.push(templates[extra.type](extra));
+    });
+    return id;
+};
+
 loadTemplates(function(templates) {
     fs.readFile(program.in, function(err, data) {
 
         var content = [];
 
         var screens = extractScreens(data);
-        var originX = 30;
-        var lineH = 29;
+        var screenFlow = extractScreenFlow(data, screens);
         var x = originX;
-        var y = 30;
+        var y = originY;
+        var cellMargin = 50;
+        var cellWidth = 280;
+        var cellHeight = 573;
         var id = 0;
-        screens.forEach(function(screen) {
-            if (program.screen && !screen.name.match(new RegExp("^" + program.screen)))
-                return;
-            id += 1;
-            screen.zOrder = id;
-            screen.id = id;
-            screen.x = x;
-            screen.y = y;
-            var linesEncoded = _(screen.lines).map(function(line) {
-                return encodeURIComponent(line);
+
+        if (screenFlow.root.length == 0) {
+            screens.forEach(function(screen) {
+                if (program.screen && !screen.name.match(new RegExp("^" + program.screen)))
+                    return;
+                id = renderScreen(templates, content, screen, id, x, y);
+                x += cellWidth + cellMargin;
+                if (x > 2000) {
+                    x = originX;
+                    y += cellHeight + cellMargin;
+                }
             });
-            screen.linesEncoded = linesEncoded.join("%0A");
-            screen.nameEncoded = encodeURIComponent(screen.name);
-
-            content.push(templates.screen(screen));
-
-            screen.extra.forEach(function(extra) {
-                id += 1;
-                extra.x = x;
-                extra.y = y;
-                extra.zOrder = id;
-                extra.id = id;
-                if (extra.name)
-                    extra.nameEncoded = encodeURIComponent(extra.name);
-                extra.top = 109 + lineH + extra.top * lineH;
-                extra.height = extra.height * lineH;
-                if (templates[extra.type])
-                    content.push(templates[extra.type](extra));
+        }
+        else {
+            screenFlow.flat.forEach(function(flowItem) {
+                var screen = flowItem.screen;
+                if (program.screen && !screen.name.match(new RegExp("^" + program.screen)))
+                    return;
+                id = renderScreen(templates, content, screen, id, flowItem.x * (cellWidth + cellMargin), flowItem.y * (cellHeight + cellMargin));
+                // render arrow
+                if (flowItem.parent) {
+                    var x1 = Math.round(flowItem.x * (cellWidth + cellMargin));
+                    var y1 = Math.round(flowItem.y * (cellHeight + cellMargin) + 0.5 * cellHeight);
+                    var x0 = Math.round(flowItem.parent.x * (cellWidth + cellMargin) + cellWidth);
+                    var y0 = Math.round(flowItem.parent.y * (cellHeight + cellMargin) + 0.5 * cellHeight);
+                    if (y1 > y0 + cellHeight) {
+                        y0 += Math.round(Math.max(cellHeight * 0.4, cellHeight * (0.25 + 0.05 * (flowItem.y - flowItem.parent.y))));
+                        y1 -= Math.round(cellHeight * 0.4);
+                    }
+                    id += 1;
+                    content.push(templates.arrow({
+                        id: id, x0: x0, y0: y0, x1: x1, y1: y1 + 10
+                    }));
+                }
             });
+        }
 
-            x += 310;
-            if (x > 2000) {
-                x = originX;
-                y += 603;
-            }
-        });
         var out = templates.index({content: content.join("\n")});
         console.log(out);
     });
