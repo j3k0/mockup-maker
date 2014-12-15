@@ -6,8 +6,9 @@ var _ = require("underscore");
 var fs = require("fs");
 
 program
-    .version("0.2.0")
+    .version("0.3.0")
     .option("-i, --in <file>", "select the input file")
+    .option("-s, --screen <regex>", "only export screens matching regex")
     .parse(process.argv);
 
 if (!program.in)
@@ -110,6 +111,8 @@ loadTemplates(function(templates) {
         var y = 30;
         var id = 0;
         screens.forEach(function(screen) {
+            if (program.screen && !screen.name.match(new RegExp("^" + program.screen)))
+                return;
             id += 1;
             screen.zOrder = id;
             screen.id = id;
