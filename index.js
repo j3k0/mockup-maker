@@ -6,9 +6,10 @@ var _ = require("underscore");
 var fs = require("fs");
 
 program
-    .version("0.3.0")
+    .version("0.4.0")
     .option("-i, --in <file>", "select the input file")
     .option("-s, --screen <regex>", "only export screens matching regex")
+    .option("-f, --flat", "disable screen flow")
     .parse(process.argv);
 
 if (!program.in)
@@ -99,6 +100,18 @@ var extractScreens = function(data) {
     return screens;
 };
 
+var positionId = function(x,y) { return x + "," + y; };
+
+var allowedOffsetUp = function(positions, x, y) {
+    var ret = 0;
+    while (true) {
+        if (y + ret <= 0) return ret;
+        if (positions[positionId(x, y + ret - 1)]) return ret;
+        if (positions[positionId(x - 1, y + ret -1)]) return ret;
+        ret -= 1;
+    }
+};
+
 var extractScreenFlow = function(data, screens) {
     var lines = (""+data).split("\n");
     var screenFlowStarted = false;
@@ -106,6 +119,7 @@ var extractScreenFlow = function(data, screens) {
     var currentLevel = -1;
     var posX = -1;
     var posY = 0;
+    var positions = {};
     lines.forEach(function(line) {
         // Ignore comments
         if (line.match(/^\ *#.*/))
@@ -141,6 +155,9 @@ var extractScreenFlow = function(data, screens) {
         if (level <= currentLevel)
             posY += 1;
         posX += level - currentLevel;
+        posY += allowedOffsetUp(positions, posX, posY);
+        while (positions[positionId(posX, posY)])
+            posY += 1;
         currentLevel = level;
         flatTree.push({
             x: posX,
@@ -148,6 +165,7 @@ var extractScreenFlow = function(data, screens) {
             level: level,
             name: name
         });
+        positions[positionId(posX, posY)] = true;
     });
 
     /*
@@ -219,8 +237,8 @@ renderScreen = function(templates, content, screen, id, x, y) {
         extra.id = id;
         if (extra.name)
             extra.nameEncoded = encodeURIComponent(extra.name);
-        extra.top = 109 + lineH + extra.top * lineH;
-        extra.height = extra.height * lineH;
+        extra.topPx = 104 + lineH + extra.top * lineH;
+        extra.heightPx = extra.height * lineH;
         if (templates[extra.type])
             content.push(templates[extra.type](extra));
     });
@@ -241,7 +259,7 @@ loadTemplates(function(templates) {
         var cellHeight = 573;
         var id = 0;
 
-        if (screenFlow.root.length == 0) {
+        if (program.flat || screenFlow.root.length == 0) {
             screens.forEach(function(screen) {
                 if (program.screen && !screen.name.match(new RegExp("^" + program.screen)))
                     return;
@@ -269,10 +287,21 @@ loadTemplates(function(templates) {
                         y0 += Math.round(Math.max(cellHeight * 0.4, cellHeight * (0.25 + 0.05 * (flowItem.y - flowItem.parent.y))));
                         y1 -= Math.round(cellHeight * 0.4);
                     }
+                    if (y1 < y0 - cellHeight) {
+                        y0 -= Math.round(Math.max(cellHeight * 0.4, cellHeight * (0.25 - 0.05 * (flowItem.y - flowItem.parent.y))));
+                        y1 += Math.round(cellHeight * 0.4);
+                    }
                     id += 1;
-                    content.push(templates.arrow({
-                        id: id, x0: x0, y0: y0, x1: x1, y1: y1 + 10
-                    }));
+                    if (y1 >= y0) {
+                        content.push(templates.arrow({
+                            id: id, x0: x0, y0: y0, x1: x1, y1: y1 + 10, down: true
+                        }));
+                    }
+                    else {
+                        content.push(templates.arrow({
+                            id: id, x0: x0, y0: y0 + 10, x1: x1, y1: y1, up: true
+                        }));
+                    }
                 }
             });
         }

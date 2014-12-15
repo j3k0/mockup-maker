@@ -1,4 +1,4 @@
-<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::Image" x="{{math x "+" 33}}" y="{{math y "+" top}}" w="215" h="{{height}}" measuredW="77" measuredH="79" zOrder="300{{zOrder}}" locked="false" isInGroup="-1">
+<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::Image" x="{{math x "+" 27}}" y="{{math y "+" topPx}}" w="228" h="{{heightPx}}" measuredW="77" measuredH="79" zOrder="300{{zOrder}}" locked="false" isInGroup="-1">
     <controlProperties>
         <text>{{nameEncoded}}</text>
     </controlProperties>

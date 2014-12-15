@@ -3,12 +3,12 @@
     <model>IPhone5</model>
     </controlProperties>
 </control>
-<control controlID="100{{id}}" controlTypeID="com.balsamiq.mockups::iPhoneMenu" x="{{math x "+" 33}}" y="{{math y "+" 104}}" w="-1" h="-1" measuredW="215" measuredH="189" zOrder="100{{zOrder}}" locked="false" isInGroup="-1">
+<control controlID="100{{id}}" controlTypeID="com.balsamiq.mockups::iPhoneMenu" x="{{math x "+" 27}}" y="{{math y "+" 99}}" w="228" h="-1" measuredW="225" measuredH="189" zOrder="100{{zOrder}}" locked="false" isInGroup="-1">
     <controlProperties>
     <text>%0A{{{linesEncoded}}}</text>
     </controlProperties>
 </control>
-<control controlID="200{{id}}" controlTypeID="com.balsamiq.mockups::SubTitle" x="{{math x "+" 43}}" y="{{math y "+" 110}}" w="215" h="-1" measuredW="95" measuredH="27" zOrder="200{{zOrder}}" locked="false" isInGroup="-1">
+<control controlID="200{{id}}" controlTypeID="com.balsamiq.mockups::SubTitle" x="{{math x "+" 37}}" y="{{math y "+" 105}}" w="208" h="-1" measuredW="95" measuredH="27" zOrder="200{{zOrder}}" locked="false" isInGroup="-1">
     <controlProperties>
     <text>{{{nameEncoded}}}</text>
     </controlProperties>
