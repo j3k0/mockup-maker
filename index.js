@@ -9,6 +9,7 @@ program
     .version("0.4.0")
     .option("-i, --in <file>", "select the input file")
     .option("-s, --screen <regex>", "only export screens matching regex")
+    .option("-x, --section <section>", "output content of given section")
     .option("-f, --flat", "disable screen flow")
     .parse(process.argv);
 
@@ -112,6 +113,26 @@ var allowedOffsetUp = function(positions, x, y) {
     }
 };
 
+var extractSection = function(data, name) {
+    var ret = [];
+    var lines = (""+data).split("\n");
+    var sectionStarted = false;
+    lines.forEach(function(line) {
+        if (line == "== " + name + " ==") {
+            sectionStarted = true;
+            return;
+        }
+        else if (line.match(/^==.*==$/)) {
+            sectionStarted = false;
+        }
+        if (!sectionStarted) {
+            return;
+        }
+        ret.push(line);
+    });
+    return ret;
+};
+
 var extractScreenFlow = function(data, screens) {
     var lines = (""+data).split("\n");
     var screenFlowStarted = false;
@@ -130,7 +151,10 @@ var extractScreenFlow = function(data, screens) {
             screenFlowStarted = true;
             return;
         }
-        if (line.match(/^===.*===$/)) {
+        else if (line.match(/^== (.)* ==$/)) {
+            screenFlowStarted = false;
+        }
+        if (line.match(/^=== .* ===$/)) {
             screenFlowStarted = false;
         }
         if (!screenFlowStarted) {
@@ -247,6 +271,11 @@ renderScreen = function(templates, content, screen, id, x, y) {
 
 loadTemplates(function(templates) {
     fs.readFile(program.in, function(err, data) {
+
+        if (program.section) {
+            console.log(extractSection(data, program.section).join("\n"));
+            return;
+        }
 
         var content = [];
 
