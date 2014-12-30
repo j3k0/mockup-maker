@@ -1,6 +1,6 @@
 {
   "name": "mockup-maker",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Generate Balsamiq mockups from text description",
   "main": "index.js",
   "scripts": {
