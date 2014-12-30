@@ -1,0 +1,12 @@
+<control controlID="{{id}}" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="{{x}}" y="{{y}}" w="282" h="573" measuredW="282" measuredH="573" zOrder="{{zOrder}}" locked="false" isInGroup="-1">
+    <controlProperties>
+        <borderStyle>square</borderStyle>
+        <text>{{nameEncoded}}%0Ahttp%3A//</text>
+    </controlProperties>
+</control>
+<control controlID="100{{id}}" controlTypeID="com.balsamiq.mockups::iPhoneMenu" x="{{math x "+" 1}}" y="{{math y "+" 73}}" w="280" h="-1" measuredW="280" measuredH="189" zOrder="100{{zOrder}}" locked="false" isInGroup="-1">
+    <controlProperties>
+    <text>{{{linesEncoded}}}</text>
+    </controlProperties>
+</control>
+

@@ -5,14 +5,12 @@ To log in, you have to do several things...
 == screen flow ==
 
 welcome
-  index
+  login
 
 === welcome ===
-
-image 5 your logo
-
 _ enter, (>)
-
+image 5 your logo
+_ enter, (>)
 === login ===
 
 * email:

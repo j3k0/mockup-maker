@@ -10,6 +10,7 @@ program
     .option("-i, --in <file>", "select the input file")
     .option("-s, --screen <regex>", "only export screens matching regex")
     .option("-x, --section <section>", "output content of given section")
+    .option("-t, --template <template>", "select screen template (web|mobile)")
     .option("-f, --flat", "disable screen flow")
     .parse(process.argv);
 
@@ -30,7 +31,7 @@ Handlebars.registerHelper("math", function(lvalue, operator, rvalue, options) {
 
 var loadTemplates = function(callback) {
     var templates = {};
-    var fileNames = [ "index", "screen", "image", "arrow" ];
+    var fileNames = [ "index", "image", "arrow", "web", "mobile" ];
     var nDone = 0;
     var doneWithFile = function() {
         nDone ++;
@@ -235,9 +236,32 @@ var extractScreenFlow = function(data, screens) {
     }
 };
 
-var originX = 30;
-var originY = 30;
-var lineH = 29;
+var TEMPLATE = program.template || "mobile";
+var LAYOUTS = {
+    web: {
+        cellMargin: 50,
+        cellWidth: 280,
+        cellHeight: 573,
+        originX: 30,
+        originY: 30,
+        lineH: 29,
+        left: 1,
+        width: 280,
+        top: 78-29
+    },
+    mobile: {
+        cellMargin: 50,
+        cellWidth: 280,
+        cellHeight: 573,
+        originX: 30,
+        originY: 30,
+        lineH: 29,
+        left: 27,
+        width: 228,
+        top: 104
+    }
+};
+var LAYOUT = LAYOUTS[TEMPLATE];
 
 renderScreen = function(templates, content, screen, id, x, y) {
     id += 1;
@@ -251,18 +275,22 @@ renderScreen = function(templates, content, screen, id, x, y) {
     screen.linesEncoded = linesEncoded.join("%0A");
     screen.nameEncoded = encodeURIComponent(screen.name);
 
-    content.push(templates.screen(screen));
+    if (program.template)
+        content.push(templates[program.template](screen));
+    else
+        content.push(templates.mobile(screen));
 
     screen.extra.forEach(function(extra) {
         id += 1;
-        extra.x = x;
+        extra.x = x + LAYOUT.left;
         extra.y = y;
+        extra.w = LAYOUT.width;
         extra.zOrder = id;
         extra.id = id;
         if (extra.name)
             extra.nameEncoded = encodeURIComponent(extra.name);
-        extra.topPx = 104 + lineH + extra.top * lineH;
-        extra.heightPx = extra.height * lineH;
+        extra.topPx = LAYOUT.top + LAYOUT.lineH + extra.top * LAYOUT.lineH;
+        extra.heightPx = extra.height * LAYOUT.lineH;
         if (templates[extra.type])
             content.push(templates[extra.type](extra));
     });
@@ -281,11 +309,11 @@ loadTemplates(function(templates) {
 
         var screens = extractScreens(data);
         var screenFlow = extractScreenFlow(data, screens);
-        var x = originX;
-        var y = originY;
-        var cellMargin = 50;
-        var cellWidth = 280;
-        var cellHeight = 573;
+        var x = LAYOUT.originX;
+        var y = LAYOUT.originY;
+        var cellMargin = LAYOUT.cellMargin;
+        var cellWidth = LAYOUT.cellWidth;
+        var cellHeight = LAYOUT.cellHeight;
         var id = 0;
 
         if (program.flat || screenFlow.root.length == 0) {
@@ -295,7 +323,7 @@ loadTemplates(function(templates) {
                 id = renderScreen(templates, content, screen, id, x, y);
                 x += cellWidth + cellMargin;
                 if (x > 2000) {
-                    x = originX;
+                    x = LAYOUT.originX;
                     y += cellHeight + cellMargin;
                 }
             });
